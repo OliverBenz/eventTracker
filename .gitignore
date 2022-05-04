@@ -1,0 +1,11 @@
+# File extensions (Should not occur)
+*.o
+*.a
+
+# Directories
+.vscode/
+.idea/
+build/
+cmake-build-debug/
+cmake-build-release/
+docs/doxygen/
