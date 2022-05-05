@@ -1,6 +1,7 @@
 #include "tracker.hpp"
 
 #include <iostream> // TODO: Remove
+#include <fstream>
 
 tracker::tracker(QWidget* parent) : QWidget(parent) {
     lMain = new QVBoxLayout(this);
@@ -36,15 +37,35 @@ void tracker::start() noexcept {
 }
 
 void tracker::end() {
+/*
     for(std::size_t i = 0; i < events.size(); i++) {
         std::cout << i << ": " << events[i] << " s \n";
     }
+*/
+
+    // TODO: Add date to filename
+    // TODO: Check if file exists - Add postfix
+
    // Export csv file
+    std::ofstream file("data.csv");
+    if(! file.is_open())
+       return;
+
+    std::string buffer;
+    for(const auto& val : events) {
+        buffer.append(std::to_string(val) + ";");
+    }
+    buffer.pop_back(); // Delete last ";"
+    buffer.append("\n");
+
+    file << buffer;
+    file.close();
 }
 
 void tracker::trackEvent() {
     if(!started)
         return;
+
     events.push_back(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - startTime).count());
     bTracker->setText(QString(std::to_string(events.size()).c_str()));
     // add to vector current time
