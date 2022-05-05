@@ -1,7 +1,65 @@
 #include "tracker.hpp"
 
-#include <iostream> // TODO: Remove
 #include <fstream>
+#include <iostream>
+#include <filesystem>
+
+
+std::string getDate()
+{
+    const auto now = std::chrono::system_clock::now();
+    const auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d");
+    return ss.str();
+}
+
+void writeTimeToFile(std::vector<long>& values) {
+    const std::string subdir = "data/";
+    const std::string ext = ".csv";
+    std::string fileName = getDate() + "_data";
+
+    // Check subdir exists
+    if(!std::filesystem::exists(subdir)) {
+        std::filesystem::create_directory(subdir);
+    }
+    // Check file not exist already
+    if(std::filesystem::exists(subdir + fileName + ext)) {
+        unsigned count = 1;
+
+        // Try path "data/filename(count).csv"
+        const std::string before = subdir + fileName + "(";
+        const std::string after = ")" + ext;
+
+        while (std::filesystem::exists(before + std::to_string(count) + after))
+            ++count;
+
+        fileName.append("(" + std::to_string(count) + ")");
+    }
+
+    std::ofstream file(subdir + fileName + ext);
+
+    // File could be opened
+    if(file.is_open()) {
+        std::string buffer;
+        for(const auto& val: values)
+            buffer.append(std::to_string(val) + ";");
+
+        buffer.pop_back();      // Delete last ";"
+        buffer.append("\n");  // Properly newline at end
+
+        file << buffer;
+        file.close();
+    }
+    else {
+        for(const auto& val: values)
+            std::cout << val << ";";
+
+        // TODO: Better solution than just output.
+    }
+}
+
 
 tracker::tracker(QWidget* parent) : QWidget(parent) {
     lMain = new QVBoxLayout(this);
@@ -37,29 +95,8 @@ void tracker::start() noexcept {
 }
 
 void tracker::end() {
-/*
-    for(std::size_t i = 0; i < events.size(); i++) {
-        std::cout << i << ": " << events[i] << " s \n";
-    }
-*/
-
-    // TODO: Add date to filename
-    // TODO: Check if file exists - Add postfix
-
-   // Export csv file
-    std::ofstream file("data.csv");
-    if(! file.is_open())
-       return;
-
-    std::string buffer;
-    for(const auto& val : events) {
-        buffer.append(std::to_string(val) + ";");
-    }
-    buffer.pop_back(); // Delete last ";"
-    buffer.append("\n");
-
-    file << buffer;
-    file.close();
+    // Export csv file
+    writeTimeToFile(events);
 }
 
 void tracker::trackEvent() {
@@ -68,7 +105,6 @@ void tracker::trackEvent() {
 
     events.push_back(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - startTime).count());
     bTracker->setText(QString(std::to_string(events.size()).c_str()));
-    // add to vector current time
 }
 
 tracker::~tracker() noexcept {
@@ -79,6 +115,4 @@ tracker::~tracker() noexcept {
     delete lButtons;
     delete lMain;
 }
-
-
 
