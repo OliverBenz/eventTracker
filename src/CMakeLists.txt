@@ -7,7 +7,7 @@ set(CMAKE_AUTOUIC ON)
 
 
 # ----- Setup project ------
-set(targetName "demTracker" CACHE STRING "Name of the main executable.")
+set(targetName "eventTracker" CACHE STRING "Name of the main executable.")
 
 # Get files to build
 file(GLOB_RECURSE sourceFiles ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
